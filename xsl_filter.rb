@@ -10,7 +10,6 @@ class XslTemplate
     @file_template = open
     @template = @file_template.dup
     @variables = []
-    @placeholders = []
     @start = '1'
     @end = nil
     @separator = '_'
@@ -41,23 +40,26 @@ class XslTemplate
   end
 
   def inject_placeholders
-    #Find ID if it doesn't exist
-    template.gsub!(/(<xsl:value-of\s+select=["']\s*)(format-number\()?(\s+)?([\w]+)?(\/)?(@)(\w+)(,\s*'[$#,0]+'\))?(\s*["']\s*\/>)/) do |match|
-      variable = [$1,$2,$3,$4,$5,$6,$7,$8,$9]
-      ##TODO: 
-      raise "need to update to handle #{match}" unless variable.join == match
-      @variables.push variable
-      placeholder = [@start,$4,$7,@end].compact
-      @placeholders.push placeholder
-      placeholder.join(@separator)  
+    template.gsub!(/<xsl:value-of\s+select=["']\s*.*["']\s*\/>/) do |match, tag=$&|
+      if match[/(<xsl:value-of\s+select=["']\s*)(format-number\()?(\s+)?([\w]+)?(\/)?(@)(\w+)(,\s*'[$#,0]+'\))?(\s*["']\s*\/>)/]
+        variable = [$1,$2,$3,$4,$5,$6,$7,$8,$9]
+        placeholder = [@start,$4,$7,@end].compact
+      elsif match[/\sid=["'](\w+)["']/] #TODO: handle id
+        variable = [tag] #capture entire value-of tag and storing in variable
+        placeholder = [@start,$2,@end].compact #replace with value of id
+      else
+        raise "need to update variables to handle: #{match}"
+      end
+        @variables.push {variable: variable, placeholder: placeholder}
+        placeholder.join(@separator)
     end
   end
 
   def replace_variables
-    placeholders.map.with_index do |placeholder, index|
+    variables.map do |_variable|
+      variable, placeholder = _variable[:variable], _variable[:placeholder]
       raise "placeholder #{placeholder} not found" unless template[/#{placeholder}/]
       template.sub!(placeholder.join(@separator)) do |match|
-        variable = variables[index]
         variable.compact.join
       end
     end
