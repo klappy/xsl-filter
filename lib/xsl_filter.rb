@@ -1,4 +1,5 @@
 require 'rest_client'
+require 'nokogiri'
 require 'pry'
 
-%w[template filter translate].each{|file| require File.dirname(__FILE__)+'/xsl_filter/'+file}
+%w[xsl_template filter translate].each{|file| require File.dirname(__FILE__)+'/xsl_filter/'+file}

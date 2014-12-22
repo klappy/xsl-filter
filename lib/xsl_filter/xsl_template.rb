@@ -1,4 +1,4 @@
-class Template
+class XslTemplate
   attr_accessor :template, :file_template, :variables, :placeholders, :path
   def initialize(path)
     @path = path
@@ -27,7 +27,7 @@ class Template
   end
 
   def unfilter(_save=false)
-    raise "unfilter requires variables and placeholders" unless variables.count > 0 && placeholders.count > 0
+    raise "unfilter requires variables and placeholders" unless variables.count > 0
     replace_variables
     move_titles_back
     save(path+".unfilter.html") if _save
@@ -35,19 +35,37 @@ class Template
   end
 
   def inject_placeholders
-    template.gsub!(/<xsl:value-of\s+select=["']\s*.*["']\s*\/>/) do |match, tag=$&|
-      if match[/(<xsl:value-of\s+select=["']\s*)(format-number\()?(\s+)?([\w]+)?(\/)?(@)(\w+)(,\s*'[$#,0]+'\))?(\s*["']\s*\/>)/]
-        variable = [$1,$2,$3,$4,$5,$6,$7,$8,$9]
-        placeholder = [@start,$4,$7,@end].compact
-      elsif match[/\sid=["'](\w+)["']/] #TODO: handle id
-        variable = [tag] #capture entire value-of tag and storing in variable
-        placeholder = [@start,$2,@end].compact #replace with value of id
+    xml = Nokogiri::XML(@template)
+    xml.xpath('//xsl:value-of').each do |node, _attributes=node.attributes, _select=_attributes["select"]|
+      return unless _select
+      variable = node.to_xml
+      if (id = _attributes["id"])
+        placeholder = [@start, id, @end]
+      elsif _select.value[/(format-number\()?(\s+)?([\w]+)?(\/)?(@)(\w+)(,\s*'[$#,0]+'\))?/]
+        placeholder = [@start, $3, $6, @end].compact
+      elsif _select.value[/["']?\s*(\w+)\s*["']?/]
+        placeholder = [@start, $1, @end].compact
       else
-        raise "need to update variables to handle: #{match}"
+        binding.pry
+        raise "need to update variables to handle: #{node.to_xml}"
       end
-        @variables.push {variable: variable, placeholder: placeholder}
-        placeholder.join(@separator)
+      @variables.push({variable: variable, placeholder: placeholder})
+      node.replace(placeholder.join(@separator))
     end
+    @template = xml.to_xml
+    # template.gsub!(/<xsl:value-of\s+select=["']\s*.*["']\s*\/>/) do |match, tag=$&|
+    #   if match[/\sid=["']\s*(\w+)\s*["']/]
+    #     variable = tag #capture entire value-of tag and storing in variable
+    #     placeholder = [@start,$2,@end].compact #replace with value of id
+    #     binding.pry
+    #   elsif match[/<xsl:value-of\s+select=["']+\s*(\w)\s*["']+\s*\/>/]
+    #     variable = tag
+    #     placeholder = [@start,$2,@end]
+    #   elsif match[/(<xsl:value-of\s+select=["']\s*)(format-number\()?(\s+)?([\w]+)?(\/)?(@)(\w+)(,\s*'[$#,0]+'\))?(\s*["']\s*\/>)/]
+    #     variable = tag
+    #     placeholder = [@start,$4,$7,@end].compact
+    #   else
+    # end
   end
 
   def replace_variables
@@ -55,7 +73,7 @@ class Template
       variable, placeholder = _variable[:variable], _variable[:placeholder]
       raise "placeholder #{placeholder} not found" unless template[/#{placeholder}/]
       template.sub!(placeholder.join(@separator)) do |match|
-        variable.compact.join
+        variable
       end
     end
     !changed?
