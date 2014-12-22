@@ -1,9 +1,4 @@
-require 'restclient'
-require 'pry'
-require 'open-uri'
-require 'nokogiri'
-
-class XslTemplate
+class Template
   attr_accessor :template, :file_template, :variables, :placeholders, :path
   def initialize(path)
     @path = path
@@ -94,36 +89,6 @@ class XslTemplate
     template
   end
 end
-
-module XslTranslatedTemplate
-  def self.unfilter(original_template_path, translated_template_path, save)
-    original = XslTemplate.new(original_template_path)
-    original.test
-    original.filter
-    translated = XslTemplate.new(translated_template_path)
-    translated.variables = original.variables
-    translated.placeholders = original.variables
-    translated.unfilter(save)
-  end
-
-  def self.translate(html)
-    params = {
-      customer: "College Factual",
-      token: "",
-      project: "Templates",
-      asset: "",
-      from: "en-us",
-      to: "zh-chs"
-    }
-    payload = "html=#{URI.escape(html)}"
-    url = "https://translate.sovee.com/html?#{params.map{|k,v|"#{k}=#{CGI.escape(v)}"}.join('&')}"
-    RestClient::Request.execute(method: :get, url: url, payload: payload)
-  end
-end
-
-#find and replace all template variables with mt variables
-t = XslTemplate.new("")
-t.test
 
 =begin
 jon stromer-galley: <xsl:value-of select=" concat('hi', 'ther'e) " />
