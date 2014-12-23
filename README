@@ -1,1 +1,12 @@
 README
+
+cd example
+irb -r ./example.rb
+
+paying = XslTemplate.new('./templates/paying-for-college-value-for-your-money.xsl')
+paying.test
+=> "all is well"
+
+learning = XslTemplate.new('./templates/academic-life-distance-learning.xsl')
+learning.test
+=> "all is well"
