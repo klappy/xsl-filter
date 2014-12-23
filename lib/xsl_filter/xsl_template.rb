@@ -11,7 +11,8 @@ class XslTemplate
   end
 
   def open
-    File.read(path)
+    file = File.read(path)
+    Nokogiri::XML(file).to_xml
   end
 
   def save(_path)
@@ -53,28 +54,12 @@ class XslTemplate
       node.replace(placeholder.join(@separator))
     end
     @template = xml.to_xml
-    # template.gsub!(/<xsl:value-of\s+select=["']\s*.*["']\s*\/>/) do |match, tag=$&|
-    #   if match[/\sid=["']\s*(\w+)\s*["']/]
-    #     variable = tag #capture entire value-of tag and storing in variable
-    #     placeholder = [@start,$2,@end].compact #replace with value of id
-    #     binding.pry
-    #   elsif match[/<xsl:value-of\s+select=["']+\s*(\w)\s*["']+\s*\/>/]
-    #     variable = tag
-    #     placeholder = [@start,$2,@end]
-    #   elsif match[/(<xsl:value-of\s+select=["']\s*)(format-number\()?(\s+)?([\w]+)?(\/)?(@)(\w+)(,\s*'[$#,0]+'\))?(\s*["']\s*\/>)/]
-    #     variable = tag
-    #     placeholder = [@start,$4,$7,@end].compact
-    #   else
-    # end
   end
 
   def replace_variables
-    variables.map do |_variable|
-      variable, placeholder = _variable[:variable], _variable[:placeholder]
+    @variables.map do |_variable, variable=_variable[:variable], placeholder=_variable[:placeholder]|
       raise "placeholder #{placeholder} not found" unless template[/#{placeholder}/]
-      template.sub!(placeholder.join(@separator)) do |match|
-        variable
-      end
+      template.sub!(placeholder.join(@separator), variable)
     end
     !changed?
   end
