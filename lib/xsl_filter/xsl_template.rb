@@ -48,7 +48,7 @@ class XslTemplate
     variable = node.to_xml
     if (id = _attributes["id"])
       placeholder = [@start, id, @end].compact
-    elsif _select.value[/baseUri/] # does not handle and simply moves on
+    elsif _select.value[/\$baseUri/] # does not handle and simply moves on
       return node
     elsif _select.value[/\s*(\w+)?\/?@(\w+)\s*/]
       placeholder = [@start, $1, $2, @end].compact

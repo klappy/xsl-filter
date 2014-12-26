@@ -77,7 +77,6 @@ describe "xsl_filter" do
         expect(placeholder.to_s).to eq("1_factorPct")
       end
 
-      # this should be changed later to raise error.
       it "should bypass plain text strings" do
         variable = '<xsl:value-of select="\'All Colleges\'"/>'
         node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
@@ -86,11 +85,14 @@ describe "xsl_filter" do
       end
 
       it "should bypass baseUri" do
-        variable = '<xsl:value-of select="\'All Colleges\'"/>'
+        variable = '<xsl:value-of select=" $baseUri "/>'
         node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
         placeholder = xsl_template.inject_placeholder(node)
         expect(placeholder.to_s).to eq(variable)
       end
+
+      #TODO: raise error on multiple variables in any combination of @ and $
+      #TODO: plain text strings should be changed later to raise error.
     end
   end
 end
