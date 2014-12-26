@@ -44,18 +44,19 @@ class XslTemplate
   end
 
   def inject_placeholder(node, _attributes=node.attributes, _select=_attributes["select"])
-    return node unless _select
     variable = node.to_xml
     if (id = _attributes["id"])
       placeholder = [@start, id, @end].compact
-    elsif _select.value[/\$baseUri/] # does not handle and simply moves on
+    elsif _select.value[/^\s*'.+'\s*$/] #plain text as string shouldn't be a placeholder and should be a translatle string
       return node
+    elsif %w($baseUri @uri @navName).map{ |var| _select.value[/#{Regexp.escape(var)}/] }.compact.any? # does not handle and simply moves on
+      return node
+    elsif _select.value.scan(/[@\$]/).count != 1
+      raise "too many @ or $ in: #{node.to_xml}"
     elsif _select.value[/\s*(\w+)?\/?@(\w+)\s*/]
       placeholder = [@start, $1, $2, @end].compact
     elsif _select.value[/\$(\w+)/]
       placeholder = [@start, $1, @end].compact
-    elsif _select.value[/'.+'/] #plain text as string shouldn't be a placeholder and should be a translatle string
-      return node
     # raise "Plain text should not be a placeholder and should be a translatable string."
     else
       raise "need to update variables to handle: #{node.to_xml}"
@@ -96,11 +97,3 @@ class XslTemplate
     template
   end
 end
-
-=begin
-jon stromer-galley: <xsl:value-of select=" concat('hi', 'ther'e) " />
-jon stromer-galley: <xsl:value-of select="" id="foo" />
-jon stromer-galley: <xsl:value-of id="foo">this is the select</xsl:value-of>
-jon stromer-galley: $bhUriLookup/page[@id = 'college-academic-life-graduation-and-retention']/@uri
-jon stromer-galley: if ( $incomeBracket/@countReceiving castable as xs:decimal ) then format-number($incomeBracket/@countReceiving div freshmen/@count, '##0.0%') else 'N/A'
-=end

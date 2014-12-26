@@ -2,7 +2,7 @@ require './spec/spec_helper'
 require './lib/xsl_filter'
 
 describe "xsl_filter" do
-  let(:template_path) { "./spec/fixtures/paying-for-college-value-for-your-money.xsl" }
+  let(:template_path) { "./spec/fixtures/homepage.xsl" }
   let(:xsl_template)  { XslTemplate.new(template_path) }
 
   describe "template" do
@@ -77,6 +77,15 @@ describe "xsl_filter" do
         expect(placeholder.to_s).to eq("1_factorPct")
       end
 
+      it "should handle non self closing variables with ids" do
+        variable = '<xsl:value-of id="foo">this is the select</xsl:value-of>'
+        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
+        placeholder = xsl_template.inject_placeholder(node)
+        expect(placeholder.to_s).to eq("1_foo")
+      end
+    end
+
+    describe "bypass" do
       it "should bypass plain text strings" do
         variable = '<xsl:value-of select="\'All Colleges\'"/>'
         node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
@@ -84,15 +93,43 @@ describe "xsl_filter" do
         expect(placeholder.to_s).to eq(variable)
       end
 
-      it "should bypass baseUri" do
+      it "should bypass $baseUri" do
         variable = '<xsl:value-of select=" $baseUri "/>'
         node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
         placeholder = xsl_template.inject_placeholder(node)
         expect(placeholder.to_s).to eq(variable)
       end
 
-      #TODO: raise error on multiple variables in any combination of @ and $
+      it "should bypass @uri" do
+        variable = '<xsl:value-of select=" $bhUriLookup/page[@id = \'college-academic-life-graduation-and-retention\']/@uri "/>'
+        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
+        placeholder = xsl_template.inject_placeholder(node)
+        expect(placeholder.to_s).to eq(variable)
+      end
+
+      it "should bypass @navName" do
+        variable = '<xsl:value-of select="$bhUriLookup/page[ @id = \'college-paying-for-college-home\' ]/@navName"/>'
+        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
+        placeholder = xsl_template.inject_placeholder(node)
+        expect(placeholder.to_s).to eq(variable)
+      end
+    end
+
+    describe "exceptions" do
+      it "should raise error with no @ or $ variables" do
+        variable = '<xsl:value-of select=" concat(\'hi\', \'there\') " />'
+        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
+        expect{ xsl_template.inject_placeholder(node).to_s }.to raise_error
+      end
+
+      it "should raise error with more than one @ or $" do
+        variable = '<xsl:value-of select=" if ( $incomeBracket/@countReceiving castable as xs:decimal ) then format-number($incomeBracket/@countReceiving div freshmen/@count, \'##0.0%\') else \'N/A\' " />'
+        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
+        expect{ xsl_template.inject_placeholder(node).to_s }.to raise_error
+      end
+
       #TODO: plain text strings should be changed later to raise error.
+      #TODO: non self closing variables with ids should raise error as causes same issue as plain text above
     end
   end
 end
