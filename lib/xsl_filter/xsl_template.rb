@@ -37,31 +37,43 @@ class XslTemplate
 
   def inject_placeholders
     xml = Nokogiri::XML(@template)
-    xml.xpath('//xsl:value-of').each do |node, _attributes=node.attributes, _select=_attributes["select"]|
-      return unless _select
-      variable = node.to_xml
-      if (id = _attributes["id"])
-        placeholder = [@start, id, @end]
-      elsif _select.value[/(format-number\()?(\s+)?([\w]+)?(\/)?(@)(\w+)(,\s*'[$#,0]+'\))?/]
-        placeholder = [@start, $3, $6, @end].compact
-      elsif _select.value[/["']?\s*(\w+)\s*["']?/]
-        placeholder = [@start, $1, @end].compact
-      else
-        binding.pry
-        raise "need to update variables to handle: #{node.to_xml}"
-      end
-      @variables.push({variable: variable, placeholder: placeholder})
-      node.replace(placeholder.join(@separator))
+    xml.xpath('//xsl:value-of').each do |node|
+      inject_placeholder(node)
     end
     @template = xml.to_xml
   end
 
+  def inject_placeholder(node, _attributes=node.attributes, _select=_attributes["select"])
+    return node unless _select
+    variable = node.to_xml
+    if (id = _attributes["id"])
+      placeholder = [@start, id, @end].compact
+    elsif _select.value[/baseUri/] # does not handle and simply moves on
+      return node
+    elsif _select.value[/\s*(\w+)?\/?@(\w+)\s*/]
+      placeholder = [@start, $1, $2, @end].compact
+    elsif _select.value[/\$(\w+)/]
+      placeholder = [@start, $1, @end].compact
+    elsif _select.value[/'.+'/] #plain text as string shouldn't be a placeholder and should be a translatle string
+      return node
+    # raise "Plain text should not be a placeholder and should be a translatable string."
+    else
+      raise "need to update variables to handle: #{node.to_xml}"
+    end
+    @variables.push({variable: variable, placeholder: placeholder})
+    node.replace(placeholder.join(@separator))
+  end
+
   def replace_variables
-    @variables.map do |_variable, variable=_variable[:variable], placeholder=_variable[:placeholder]|
-      raise "placeholder #{placeholder} not found" unless template[/#{placeholder}/]
-      template.sub!(placeholder.join(@separator), variable)
+    @variables.map do |_variable|
+      replace_variable(_variable)
     end
     !changed?
+  end
+
+  def replace_variable(_variable, variable=_variable[:variable], placeholder=_variable[:placeholder])
+      raise "placeholder #{placeholder} not found" unless template[/#{placeholder}/]
+      template.sub!(placeholder.join(@separator), variable)
   end
 
   def move_titles #find and move text with Nokogiri and/or other methods
@@ -78,14 +90,6 @@ class XslTemplate
 
   def changed?
     template != file_template
-  end
-
-  def test
-    filter
-    raise "filter didn't apply" unless changed?
-    unfilter
-    raise "unfilter didn't put things back" unless !changed?
-    "all is well"
   end
 
   def inspect
