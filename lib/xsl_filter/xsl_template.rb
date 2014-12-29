@@ -96,4 +96,9 @@ class XslTemplate
   def inspect
     template
   end
+  alias_method :to_s, :inspect
+
+  def translate
+    @template = Translate.template(template)
+  end
 end
