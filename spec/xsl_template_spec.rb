@@ -20,24 +20,33 @@ describe "xsl_filter" do
     describe "filter" do
       it "should change when injecting placeholders" do
         xsl_template.inject_placeholders
-        xsl_template.changed?
+        expect(xsl_template.changed?).to be true
       end
 
       it "should not change when replacing variables" do
         xsl_template.inject_placeholders
         xsl_template.replace_variables
-        !xsl_template.changed?
+        expect(xsl_template.changed?).to be false
       end
 
       it "should change when moving titles" do
-        xsl_template.move_titles
-        xsl_template.changed?
+        template = XslTemplate.new("./spec/fixtures/paying-for-college-value-for-your-money.xsl")
+        template.move_titles
+        expect(template.changed?).to be true
       end
 
       it "should not change after moving titles back" do
-        xsl_template.move_titles
-        xsl_template.move_titles_back
-        !xsl_template.changed?
+        template = XslTemplate.new("./spec/fixtures/paying-for-college-value-for-your-money.xsl")
+        template.move_titles
+        template.move_titles_back
+        expect(template.changed?).to be false
+      end
+
+      it "should save filtered template" do
+        xsl_template.filter(true)
+        expect(File.exist?(template_path+".filter.html")).to be true
+        File.delete(template_path+".filter.html")
+        expect(File.exist?(template_path+".filter.html")).to be false
       end
     end
 
