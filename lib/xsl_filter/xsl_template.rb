@@ -51,7 +51,7 @@ class XslTemplate
       return node
     elsif %w($baseUri @uri @navName).map{ |var| _select.value[/#{Regexp.escape(var)}/] }.compact.any? # does not handle and simply moves on
       return node
-    elsif _select.value.scan(/[@\$]/).count != 1
+    elsif _select.value.scan(/[@\$]/).count > 1
       raise "too many @ or $ in: #{node.to_xml}"
     elsif _select.value[/\s*(\w+)?\/?@(\w+)\s*/]
       placeholder = [@start, $1, $2, @end].compact

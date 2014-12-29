@@ -1,5 +1,13 @@
 README
 
+# setup in command line for translation api variables
+export API_CUSTOMER='Customer Name'
+export API_TOKEN=1234apitoken1234
+export API_PROJECT=test
+export API_ASSET=test
+export API_FROM=en-us
+export API_TO=es-419
+
+
 # run rspec tests
-$ gem install rspec
-$ rspec
+rspec
