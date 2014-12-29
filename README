@@ -9,5 +9,27 @@ export API_FROM=en-us
 export API_TO=es-419
 
 
-# run rspec tests
+# runs rspec test suite to ensure all is well.
 rspec
+
+# run command line interface for options
+./bin/xsl_filter.rb
+
+# Usage:       ./bin/xsl_filter.rb [options]
+# Filter:      ./bin/xsl_filter.rb -f -i [input filepath]
+# Translate:   ./bin/xsl_filter.rb -t -i [input filepath]
+# Filter, Translate and Unfilter:   ./bin/xsl_filter.rb -f -t -u -i [input filepath]
+#    -i, --input=filepath             input filepath
+#    -f, --filter                     filter the file
+#    -t, --translate                  translate the file
+#    -u, --unfilter                   unfilter the file
+#    -h, --help                       Prints this help
+
+
+# filters, translates and unfilters the template, outputs result to STOUT
+./bin/xsl_filter.rb -f -t -u -i ./spec/fixtures/homepage.xsl
+
+# full stack and write to file
+./bin/xsl_filter.rb -f -t -u -i ./spec/fixtures/homepage.xsl -o /tmp/test.html
+
+#TODO: update cli to overwrite/pass in API parameters. Environment vars used due to rspec test suite.
