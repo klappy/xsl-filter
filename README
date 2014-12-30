@@ -8,9 +8,14 @@ export API_ASSET=test
 export API_FROM=en-us
 export API_TO=es-419
 
+# install bundler if not already installed
+gem install bundler
 
-# runs rspec test suite to ensure all is well.
-rspec
+# run bundle to get gems
+bundle
+
+# run rspec with bundle test suite to ensure all is well.
+bundle exec rspec
 
 # run command line interface for options
 ./bin/xsl_filter.rb
