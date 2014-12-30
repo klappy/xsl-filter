@@ -33,3 +33,4 @@ rspec
 ./bin/xsl_filter.rb -f -t -u -i ./spec/fixtures/homepage.xsl -o /tmp/test.html
 
 #TODO: update cli to overwrite/pass in API parameters. Environment vars used due to rspec test suite.
+#TODO: add email and password option to make auth.sovee.com call that returns token internally.
