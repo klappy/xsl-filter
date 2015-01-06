@@ -14,7 +14,6 @@ module Translate
     hydra.queue( request = Typhoeus::Request.new(url, method: :get, body: payload, timeout: _timeout) )
     hydra.run
     request.response.body
-    # binding.pry
   end
 
   def self.text(_text)
