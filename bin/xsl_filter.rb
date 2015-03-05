@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'optparse' # http://ruby-doc.org/stdlib-2.2.0/libdoc/optparse/rdoc/OptionParser.html
+require 'ostruct'
 
 class Parser
   def self.parse(_options)
@@ -55,7 +56,7 @@ if __FILE__==$0
     template.unfilter if options.unfilter
     template.save(options.output) if options.output
 
-    puts template.template
+    #puts template.template
   end
 
 end

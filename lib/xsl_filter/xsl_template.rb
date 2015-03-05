@@ -47,19 +47,21 @@ class XslTemplate
     variable = node.to_xml
     if (id = _attributes["id"])
       placeholder = [@start, id, @end].compact
-    elsif _select.value[/^\s*'.+'\s*$/] #plain text as string shouldn't be a placeholder and should be a translatle string
+    elsif _select.value[/^\s*'.+'\s*$/] #plain text as string shouldn't be a placeholder and should be a translatable string
       return node
     elsif %w($baseUri @uri @navName).map{ |var| _select.value[/#{Regexp.escape(var)}/] }.compact.any? # does not handle and simply moves on
       return node
     elsif _select.value.scan(/[@\$]/).count > 1
-      raise "too many @ or $ in: #{node.to_xml}"
+      placeholder = [@start,  _select.value.hash.abs.to_s, @end].compact
+      #raise "too many @ or $ in: #{node.to_xml}"
     elsif _select.value[/\s*(\w+)?\/?@(\w+)\s*/]
       placeholder = [@start, $1, $2, @end].compact
     elsif _select.value[/\$(\w+)/]
       placeholder = [@start, $1, @end].compact
-    # raise "Plain text should not be a placeholder and should be a translatable string."
+      # raise "Plain text should not be a placeholder and should be a translatable string."
     else
-      raise "need to update variables to handle: #{node.to_xml}"
+      placeholder = [@start,  _select.value.hash.abs.to_s, @end].compact
+      #raise "need to update variables to handle: #{node.to_xml}"
     end
     @variables.push({variable: variable, placeholder: placeholder})
     node.replace(placeholder.join(@separator))
@@ -73,18 +75,19 @@ class XslTemplate
   end
 
   def replace_variable(_variable, variable=_variable[:variable], placeholder=_variable[:placeholder])
-      raise "placeholder #{placeholder} not found" unless template[/#{placeholder}/]
-      template.sub!(placeholder.join(@separator), variable)
+    puts "placeholder #{placeholder} not found" unless template[/#{placeholder}/]
+    template.sub!(placeholder.join(@separator), variable)
   end
 
+  # replaced 'div' with 't' - divs were messing up our divs
   def move_titles #find and move text with Nokogiri and/or other methods
     template.gsub!(/(<\w+\s+.*title=")([^"]+)("\s*>)/) do |match|
-      $1 + $3 + "<div>#{$2}</div>"
+      $1 + $3 + "<t>#{$2}</t>"
     end
   end
 
   def move_titles_back #find moved text and move it back
-    template.gsub!(/(<\w+\s+.*title=")("\s*>)<div>(.*)<\/div>/) do |match|
+    template.gsub!(/(<\w+\s+.*title=")("\s*>)<t>(.*)<\/t>/) do |match|
       $1 + $3 + $2
     end
   end
