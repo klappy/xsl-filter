@@ -110,7 +110,7 @@ if __FILE__==$0
 
       params[:asset] ||= html_file
       translated_message = "Translated html file from Sovee Smart Engine: #{filtered_directory + '/' + html_file}"
-      template.translate(params) and template.save(filtered_directory + '/' + html_file) and puts translated_message if options.translate
+      template.translate(params) and template.save(translated_directory + '/' + html_file) and puts translated_message if options.translate
       
       unfiltered_message = "Unfiltered final file: #{unfiltered_directory + '/' + file}"
       template.unfilter and template.save(unfiltered_directory + '/' + file) and puts unfiltered_message if options.unfilter
