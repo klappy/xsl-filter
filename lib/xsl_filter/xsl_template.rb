@@ -104,7 +104,7 @@ class XslTemplate
   end
   alias_method :to_s, :inspect
 
-  def translate
-    @template = Translate.template(html: template)
+  def translate(params={})
+    @template = Translate.template(params.merge(html: template))
   end
 end
