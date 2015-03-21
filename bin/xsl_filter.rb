@@ -12,7 +12,8 @@ class Parser
       opts.banner <<  "Translate:       ./bin/xsl_filter.rb -t -i [input filepath]\n"
       opts.banner <<  "Full Stack:      ./bin/xsl_filter.rb -f -t -u -i [input filepath]\n"
       opts.banner <<  "Save Full Stack: ./bin/xsl_filter.rb -f -t -u -i [input filepath] -o [output filepath]\n"
-      opts.banner <<  "Additional API:  -C 'Customer Name' -T API_TOKEN -P 'Project Name' -A 'Asset Name' -F 'en-us' -L 'es-419'"
+      opts.banner <<  "Additional API:  -C 'Customer Name' -T API_TOKEN -P 'Project Name' -A 'Asset Name' -F 'en-us' -L 'es-419'\n"
+      opts.banner <<  "Optional API:    Asset will assume filename without path.\n"
 
       opts.on("-i filepath", "--input=filepath", "input filepath") do |n|
         options.input = n
@@ -75,8 +76,6 @@ if __FILE__==$0
   if options.to_h.empty?
     Parser.parse %w(-h)
   else
-
-options
     params = {}
     params[:customer] = options.customer if options.customer
     params[:token] = options.token if options.token
@@ -85,12 +84,38 @@ options
     params[:from] = options.from if options.from
     params[:to] = options.to if options.to
 
-    template = XslTemplate.new(options.input) if options.input
-    template.filter if options.filter
-    template.translate(params) if options.translate
-    template.unfilter if options.unfilter
-    template.save(options.output) if options.output
-    puts template.template # this remains to allow piping data in command line to other commands
-  end
+    files = []
+    directory = nil
 
+    options.input = options.input.gsub(/\/$/,'') # remove extra / from path if not needed
+
+    (files = [options.input]) and (directory = File.dirname(options.input)) if File.file?(options.input)
+    (files = Dir.glob("#{options.input}/*.xsl")) and (directory = options.input) if File.directory?(options.input)
+
+    files.reject{|f| %w(. ..).include? f }.each do |filepath, file=File.basename(filepath), html_file=file.gsub('.xsl','.html')|
+      puts "\n------------------------ starting: #{filepath} ------------------------"
+      # create output sub directory for filtered templates
+      filtered_directory = directory + '/filtered_for_sovee'
+      translated_directory = directory + '/translated_from_sovee'
+      unfiltered_directory = directory + '/unfiltered_final'
+
+      Dir.mkdir(filtered_directory) unless Dir.exist?(filtered_directory)
+      Dir.mkdir(translated_directory) unless Dir.exist?(translated_directory)
+      Dir.mkdir(unfiltered_directory) unless Dir.exist?(unfiltered_directory)
+
+      template = XslTemplate.new(filepath)
+
+      filtered_message = "Upload to Smart Engine in project '#{params[:project]}' if not done already: #{filtered_directory + '/' + html_file}"
+      template.filter and template.save(filtered_directory + '/' + html_file) and puts filtered_message if options.filter
+
+      params[:asset] ||= html_file
+      translated_message = "Translated html file from Sovee Smart Engine: #{filtered_directory + '/' + html_file}"
+      template.translate(params) and template.save(filtered_directory + '/' + html_file) and puts translated_message if options.translate
+      
+      unfiltered_message = "Unfiltered final file: #{unfiltered_directory + '/' + file}"
+      template.unfilter and template.save(unfiltered_directory + '/' + file) and puts unfiltered_message if options.unfilter
+
+      puts "------------------------ completed: #{filepath} ------------------------\n"
+    end
+  end
 end
