@@ -51,20 +51,23 @@ class XslTemplate
       return node
     elsif %w($baseUri @uri @navName).map{ |var| _select.value[/#{Regexp.escape(var)}/] }.compact.any? # does not handle and simply moves on
       return node
-    elsif _select.value.scan(/[@\$]/).count > 1
-      placeholder = [@start,  _select.value.hash.abs.to_s, @end].compact
-      #raise "too many @ or $ in: #{node.to_xml}"
-    elsif _select.value[/\s*(\w+)?\/?@(\w+)\s*/]
+    elsif _select.value.scan(/[@\$]/).count > 1 # handles more than one variable
+      placeholder = [@start,  hash(_select.value), @end].compact
+    elsif _select.value[/\s*(\w+)?\/?@(\w+)\s*/] # handles nested words and variables
       placeholder = [@start, $1, $2, @end].compact
-    elsif _select.value[/\$(\w+)/]
+    elsif _select.value[/\$(\w+)/] # starting with $
       placeholder = [@start, $1, @end].compact
-      # raise "Plain text should not be a placeholder and should be a translatable string."
-    else
-      placeholder = [@start,  _select.value.hash.abs.to_s, @end].compact
-      #raise "need to update variables to handle: #{node.to_xml}"
+    else # no variables
+      placeholder = [@start,  hash(_select.value), @end].compact
     end
     @variables.push({variable: variable, placeholder: placeholder})
     node.replace(placeholder.join(@separator))
+  end
+
+  def hash(data)
+    _data = (data.class == String ? data : JSON.generate(data))
+    _hash = Digest::MD5.hexdigest(_data)
+    return _hash
   end
 
   def replace_variables
@@ -102,6 +105,6 @@ class XslTemplate
   alias_method :to_s, :inspect
 
   def translate
-    @template = Translate.template(template)
+    @template = Translate.template(html: template)
   end
 end

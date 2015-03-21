@@ -7,20 +7,20 @@ describe "xsl_filter" do
 
   describe "translate" do
     it "should translate text" do
-      translation = Translate.text("Hello world!")
+      translation = Translate.text(text: "Hello world!")
       expect(translation).to include("Hola")
     end
 
     it "should translate html" do
       html = '<html><body><div>Hello world!</div></body></html>'
-      translation = Translate.template(html)
+      translation = Translate.template(html: html)
       expect(translation).to include("Hola")
     end
 
     it "should translate template" do
       translatable_template.filter
       html = translatable_template.template
-      translation = Translate.template(html)
+      translation = Translate.template(html: html)
       expect(translation).to include("estudiar")
     end
 

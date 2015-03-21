@@ -94,6 +94,22 @@ describe "xsl_filter" do
       end
     end
 
+    describe "hashes" do
+      it "should create hash of one @ or $" do
+        hash = '1_3438adcd3d1ee8430dc87814336abc70'
+        variable = '<xsl:value-of select=" if ( $incomeBracket/@countReceiving castable as xs:decimal ) then format-number($incomeBracket/@countReceiving div freshmen/@count, \'##0.0%\') else \'N/A\' " />'
+        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
+        expect(xsl_template.inject_placeholder(node).to_s).to eq(hash)
+      end
+
+      it "should create hash of string if no @ or $ variables" do
+        hash = '1_3369f0a73761ce3d9cd9719e870a7e42'
+        variable = '<xsl:value-of select=" concat(\'hi\', \'there\') " />'
+        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
+        expect(xsl_template.inject_placeholder(node).to_s).to eq(hash)
+      end
+    end
+
     describe "bypass" do
       it "should bypass plain text strings" do
         variable = '<xsl:value-of select="\'All Colleges\'"/>'
@@ -125,18 +141,6 @@ describe "xsl_filter" do
     end
 
     describe "exceptions" do
-      it "should raise error with no @ or $ variables" do
-        variable = '<xsl:value-of select=" concat(\'hi\', \'there\') " />'
-        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
-        expect{ xsl_template.inject_placeholder(node).to_s }.to raise_error
-      end
-
-      it "should raise error with more than one @ or $" do
-        variable = '<xsl:value-of select=" if ( $incomeBracket/@countReceiving castable as xs:decimal ) then format-number($incomeBracket/@countReceiving div freshmen/@count, \'##0.0%\') else \'N/A\' " />'
-        node = Nokogiri::XML::DocumentFragment.parse(variable).children.first
-        expect{ xsl_template.inject_placeholder(node).to_s }.to raise_error
-      end
-
       #TODO: plain text strings should be changed later to raise error.
       #TODO: non self closing variables with ids should raise error as causes same issue as plain text above
     end
