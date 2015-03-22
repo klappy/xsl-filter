@@ -38,7 +38,7 @@ bundle exec rspec
 
 # ------------------------ starting: ./spec/fixtures/homepage.xsl ------------------------
 # Upload to Smart Engine in project 'CLI Tests' if not done already: ./spec/fixtures/filtered_for_sovee/homepage.html
-# Translated html file from Sovee Smart Engine: ./spec/fixtures/filtered_for_sovee/homepage.html
+# Translated html file from Sovee Smart Engine: ./spec/fixtures/translated_from_sovee/homepage.html
 # Unfiltered final file: ./spec/fixtures/unfiltered_final/homepage.xsl
 # ------------------------ completed: ./spec/fixtures/homepage.xsl ------------------------
 
