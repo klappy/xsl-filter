@@ -11,16 +11,12 @@ class Parser
       opts.banner <<  "Filter:          ./bin/xsl_filter.rb -f -i [input filepath]\n"
       opts.banner <<  "Translate:       ./bin/xsl_filter.rb -t -i [input filepath]\n"
       opts.banner <<  "Full Stack:      ./bin/xsl_filter.rb -f -t -u -i [input filepath]\n"
-      opts.banner <<  "Save Full Stack: ./bin/xsl_filter.rb -f -t -u -i [input filepath] -o [output filepath]\n"
       opts.banner <<  "Additional API:  -C 'Customer Name' -T API_TOKEN -P 'Project Name' -A 'Asset Name' -F 'en-us' -L 'es-419'\n"
       opts.banner <<  "Optional API:    Asset will assume filename without path.\n"
+      opts.banner <<  " \nUsage creates subpaths that will store the generated files and output from usage will instruct next steps.\n \n"
 
       opts.on("-i filepath", "--input=filepath", "input filepath") do |n|
         options.input = n
-      end
-
-      opts.on("-o filepath", "--output=filepath", "output filepath") do |o|
-        options.output = o
       end
 
       opts.on("-f", "--filter", "filter the file") do |f|

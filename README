@@ -1,13 +1,5 @@
 README
 
-# setup in command line for translation api variables
-export API_CUSTOMER='Customer Name'
-export API_TOKEN=1234apitoken1234
-export API_PROJECT=test
-export API_ASSET=test
-export API_FROM=en-us
-export API_TO=es-419
-
 # install bundler if not already installed
 gem install bundler
 
@@ -20,22 +12,35 @@ bundle exec rspec
 # run command line interface for options
 ./bin/xsl_filter.rb
 
-# Usage:       ./bin/xsl_filter.rb [options]
-# Filter:      ./bin/xsl_filter.rb -f -i [input filepath]
-# Translate:   ./bin/xsl_filter.rb -t -i [input filepath]
-# Filter, Translate and Unfilter:   ./bin/xsl_filter.rb -f -t -u -i [input filepath]
-#    -i, --input=filepath             input filepath
-#    -f, --filter                     filter the file
-#    -t, --translate                  translate the file
-#    -u, --unfilter                   unfilter the file
-#    -h, --help                       Prints this help
-
-
-# filters, translates and unfilters the template, outputs result to STOUT
-./bin/xsl_filter.rb -f -t -u -i ./spec/fixtures/homepage.xsl
+# Usage:           ./bin/xsl_filter.rb [options]
+# Filter:          ./bin/xsl_filter.rb -f -i [input filepath]
+# Translate:       ./bin/xsl_filter.rb -t -i [input filepath]
+# Full Stack:      ./bin/xsl_filter.rb -f -t -u -i [input filepath]
+# Additional API:  -C 'Customer Name' -T API_TOKEN -P 'Project Name' -A 'Asset Name' -F 'en-us' -L 'es-419'
+# Optional API:    Asset will assume filename without path.
+ 
+# Usage creates subpaths that will store the generated files and output from usage will instruct next steps.
+ 
+#     -i, --input=filepath             input filepath
+#     -f, --filter                     filter the file
+#     -t, --translate                  translate the file
+#     -u, --unfilter                   unfilter the file
+#     -h, --help                       Prints this help
+#     -C, --customer=api_customer      customer api_customer
+#     -T, --token=api_token            token api_token
+#     -P, --project=api_project        project api_project
+#     -A, --asset=api_asset            asset api_asset
+#     -F, --from=api_from_language     from api_from_language
+#     -L, --to=api_to_language         to api_to_language
 
 # full stack and write to file
-./bin/xsl_filter.rb -f -t -u -i ./spec/fixtures/homepage.xsl -o /tmp/test.html
+./bin/xsl_filter.rb -f -t -u -i ./spec/fixtures/ -C 'Customer Name' -T _API_TOKEN_ -P 'CLI Tests' -F 'en-us' -L 'zh-chs'
 
-#TODO: update cli to overwrite/pass in API parameters. Environment vars used due to rspec test suite.
+# ------------------------ starting: ./spec/fixtures/homepage.xsl ------------------------
+# Upload to Smart Engine in project 'CLI Tests' if not done already: ./spec/fixtures/filtered_for_sovee/homepage.html
+# Translated html file from Sovee Smart Engine: ./spec/fixtures/filtered_for_sovee/homepage.html
+# Unfiltered final file: ./spec/fixtures/unfiltered_final/homepage.xsl
+# ------------------------ completed: ./spec/fixtures/homepage.xsl ------------------------
+
+#TODO: Update Environment vars used in rspec test suite to pass params in .translate(params).
 #TODO: add email and password option to make auth.sovee.com call that returns token internally.
